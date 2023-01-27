@@ -35,6 +35,20 @@ class ImageHeatmapDataset(Dataset):
         image = image[0:720, 280:1000, :]
         heatmap = heatmap[:, 0:720, 280:1000]
 
+        # print('heatmap shape', heatmap.shape)
+
+        
+        image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_grey = np.expand_dims(image_grey, axis = 0)
+        # print('grey iamge', image_grey.shape)
+        heatmap    = np.concatenate((heatmap, image_grey), axis =0) 
+
+        # print('heatmap shape', heatmap.shape)
+
+
+
+
+
         resized_heatmap = []
         for channel in range(heatmap.shape[0]):
             resized_heatmap.append(cv2.resize(heatmap[channel], (512, 512), interpolation = cv2.INTER_LINEAR))

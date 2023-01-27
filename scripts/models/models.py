@@ -118,8 +118,6 @@ def crop(image, new_shape):
 
 
 
-
-
 # UNQ_C4 (UNIQUE CELL IDENTIFIER, DO NOT EDIT)
 # GRADED CLASS: FeatureMapBlock
 class FeatureMapBlock(nn.Module):
@@ -198,12 +196,3 @@ class UNet(nn.Module):
         xn = self.downfeature(x8)
         #### END CODE HERE ####
         return xn
-
-
-
-
-
-
-
-
-

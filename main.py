@@ -50,14 +50,11 @@ train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset
 # test_unet = UNet(22, 3)
 # print(test_unet)
 
-
 # import torch
 # print(test_unet(torch.randn(1, 22, 512, 512)).shape)
 # print(nk)
 # assert tuple(test_unet(torch.randn(1, 30, 256, 256)).shape) == (1, 3, 117, 117)
 # print("Success!")
-
-
 
 import torch.nn.functional as F
 
