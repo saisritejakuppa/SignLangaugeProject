@@ -463,6 +463,39 @@ def SaveFrame(video_path, frame_number, output_path):
 
 
 
+import mediapipe as mp
+
+
+def GetHandKeyPoints(image, threshold = 0.5):
+    mp_hands = mp.solutions.hands
+
+    # Run MediaPipe Hands.
+    with mp_hands.Hands(
+        static_image_mode=True,
+        max_num_hands=2,
+        min_detection_confidence=threshold) as hands:
+
+        results = hands.process(cv2.flip(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), 1))
+
+        print(results.multi_handedness)
+
+
+
+path = 'D:\projects\governement_project\SignLangaugeGAN\SignLangaugeProject\samples\heatmap_22.png'
+img = cv2.imread(path)
+GetHandKeyPoints(img)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Path: main.py

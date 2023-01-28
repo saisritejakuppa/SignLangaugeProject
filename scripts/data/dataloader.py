@@ -137,3 +137,24 @@ def showbatch(images, heatmaps):
 
 
 
+
+
+def CreateDataLoader(opt):
+
+    dataset = ImageHeatmapDataset(opt.image_paths, opt.heatmap_paths)
+
+    # Set the split lengths
+    train_length = int(len(dataset) * 0.8)
+    val_length = int(len(dataset) * 0.15)
+    test_length = len(dataset) - train_length - val_length
+
+    # Use random_split to split the dataset
+    train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_length, val_length, test_length])
+
+
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)
+    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False)
+
+    return [train_dataloader, val_dataloader, test_dataloader]
+

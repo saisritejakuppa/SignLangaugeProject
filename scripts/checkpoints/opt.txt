@@ -1,0 +1,15 @@
+------------ Options -------------
+batch_size: 4 
+checkpoints_dir: ./checkpoints 
+device: cuda 
+display_freq: 20 
+input_nc: 23 
+lambda_GAN: 1.0 
+lambda_L1: 100.0 
+lambda_feat: 10.0 
+lambda_vgg: 10.0 
+lr: 0.001 
+n_epochs: 100 
+output_nc: 3 
+ssim: 0.0 
+target_shape: 256 
