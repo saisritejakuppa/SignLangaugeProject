@@ -35,6 +35,11 @@ class BaseOptions():
         #number of epochs
         self.parser.add_argument('--n_epochs', type=int, default=100, help='number of epochs of training')
 
+        #save model
+        self.parser.add_argument('--save_model', type=bool, default=True, help='save the model')
+
+        #print_every
+        self.parser.add_argument('--print_every', type=int, default=2, help='print every n steps')
 
 
         #losses and lambdas
