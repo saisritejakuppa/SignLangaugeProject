@@ -481,9 +481,9 @@ def GetHandKeyPoints(image, threshold = 0.5):
 
 
 
-path = 'D:\projects\governement_project\SignLangaugeGAN\SignLangaugeProject\samples\heatmap_22.png'
-img = cv2.imread(path)
-GetHandKeyPoints(img)
+# path = 'D:\projects\governement_project\SignLangaugeGAN\SignLangaugeProject\samples\heatmap_22.png'
+# img = cv2.imread(path)
+# GetHandKeyPoints(img)
 
 
 
