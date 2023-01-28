@@ -22,7 +22,6 @@ class ImageHeatmapDataset(Dataset):
     def __getitem__(self, idx):
         image = cv2.imread(self.image_paths[idx])
 
-
         #crop the image the right half
         image = image[:, 640:, :]
 
@@ -83,7 +82,7 @@ def showbatch(images, heatmaps):
     images = images.permute(1, 2, 0).numpy() * 255
 
 
-    cv2.imwrite('data/finalimage.png', images)
+    cv2.imwrite('output/finalimage.png', images)
 
 
     for no, heatmap in enumerate(heatmaps):
@@ -92,8 +91,7 @@ def showbatch(images, heatmaps):
 
         if no< 3:
             # print(heatmap.shape)
-            
-            cv2.imwrite('data/heatmap_'+str(no)+'.png', heatmap)
+            cv2.imwrite('output/heatmap_'+str(no)+'.png', heatmap)
         
         else:
             #get the max and min value inside the heatmap
@@ -104,9 +102,9 @@ def showbatch(images, heatmaps):
             heatmap = (heatmap - min_val)/(max_val - min_val)
 
             #save a generated heatmap
-            cv2.imwrite('data/heatmap_'+str(no)+'.png', heatmap*255)
+            cv2.imwrite('output/heatmap_'+str(no)+'.png', heatmap*255)
 
-    cv2.imwrite('data/image.png', images[0])
+    cv2.imwrite('output/image.png', images[0])
 
 
     
@@ -143,6 +141,8 @@ def CreateDataLoader(opt):
 
     dataset = ImageHeatmapDataset(opt.image_paths, opt.heatmap_paths)
 
+    print('The length of the dataset is', len(dataset))
+
     # Set the split lengths
     train_length = int(len(dataset) * 0.8)
     val_length = int(len(dataset) * 0.15)
@@ -150,7 +150,6 @@ def CreateDataLoader(opt):
 
     # Use random_split to split the dataset
     train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_length, val_length, test_length])
-
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=opt.batch_size, shuffle=False)

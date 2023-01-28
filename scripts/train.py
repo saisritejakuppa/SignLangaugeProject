@@ -1,11 +1,13 @@
 from options.base_options import BaseOptions
-from data.dataloader import CreateDataLoader
+from data.dataloader import CreateDataLoader, showbatch
 from models.create_model import GetModels
 import torch
 from models.networks import weights_init
 from tqdm import tqdm
 from torch import nn
 from losses.loss import Loss
+from glob import glob
+
 
 def train(gen, disc, dataloaders, opt):
     mean_generator_loss = 0
@@ -69,9 +71,20 @@ def train(gen, disc, dataloaders, opt):
 
 opt = BaseOptions().parse()
 
-# opt.image_paths =   './imgs'
-# opt.heatmap_paths = './heatmaps'
+opt.image_paths   = glob('/content/SignLangaugeProject/output/imgs/*.png')
+opt.heatmap_paths = glob('/content/SignLangaugeProject/output/heatmaps/*.npy')
+
+
+
 print(opt)
+train_dataloader, _, _ = CreateDataLoader(opt)
+images, heatmaps = next(iter(train_dataloader))
+
+print('the heatmaps shape is', heatmaps.shape)
+print('the images shape is ', images.shape)
+showbatch(images[2], heatmaps[2])
+
+print('Created dataloader')
 
 
 # train_dataloader, val_dataloader, test_dataloader = CreateDataLoader(opt)
