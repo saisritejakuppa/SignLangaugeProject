@@ -39,7 +39,7 @@ class BaseOptions():
         self.parser.add_argument('--save_model', type=bool, default=True, help='save the model')
 
         #print_every
-        self.parser.add_argument('--print_every', type=int, default=2, help='print every n steps')
+        self.parser.add_argument('--print_every', type=int, default=10, help='print every n steps')
 
         #losses and lambdas
         self.parser.add_argument('--lambda_L1', type=float, default=10.0, help='weight for L1 loss')
