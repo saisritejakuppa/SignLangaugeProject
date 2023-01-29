@@ -117,20 +117,15 @@ def showbatch(images, heatmaps):
         #covnert to a numpy array from torch
         heatmap = heatmap.numpy()
 
-        if no< 3:
-            # print(heatmap.shape)
-            cv2.imwrite('output/heatmap_'+str(no)+'.png', heatmap)
-        
-        else:
-            #get the max and min value inside the heatmap
-            max_val = np.max(heatmap)
-            min_val = np.min(heatmap)
+        #get the max and min value inside the heatmap
+        max_val = np.max(heatmap)
+        min_val = np.min(heatmap)
 
-            #normalize the heatmap  
-            heatmap = (heatmap - min_val)/(max_val - min_val)
+        #normalize the heatmap  
+        heatmap = (heatmap - min_val)/(max_val - min_val)
 
-            #save a generated heatmap
-            cv2.imwrite('output/heatmap_'+str(no)+'.png', heatmap*255)
+        #save a generated heatmap
+        cv2.imwrite('output/heatmap_'+str(no)+'.png', heatmap*255)
 
     cv2.imwrite('output/image.png', images[0])
 
