@@ -2,52 +2,59 @@ import torch
 from torch import nn
 from tqdm.auto import tqdm
 from torchvision import transforms
-from torchvision.datasets import VOCSegmentation
 from torchvision.utils import make_grid
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
 
-def crop(image, new_shape):
-    '''
-    Function for cropping an image tensor: Given an image tensor and the new shape,
-    crops to the center pixels (assumes that the input's size and the new size are
-    even numbers).
-    Parameters:
-        image: image tensor of shape (batch size, channels, height, width)
-        new_shape: a torch.Size object with the shape you want x to have
-    '''
-    middle_height = image.shape[2] // 2
-    middle_width = image.shape[3] // 2
-    starting_height = middle_height - new_shape[2] // 2
-    final_height = starting_height + new_shape[2]
-    starting_width = middle_width - new_shape[3] // 2
-    final_width = starting_width + new_shape[3]
-    cropped_image = image[:, :, starting_height:final_height, starting_width:final_width]
-    return cropped_image
 
 
+
+class ResidualBlock(nn.Module):
+    '''
+    ResidualBlock Class:
+    Performs two convolutions and an instance normalization, the input is added
+    to this output to form the residual block output.
+    Values:
+        input_channels: the number of channels to expect from a given input
+    '''
+    def __init__(self, input_channels):
+        super(ResidualBlock, self).__init__()
+        self.conv1 = nn.Conv2d(input_channels, input_channels, kernel_size=3, padding=1, padding_mode='reflect')
+        self.conv2 = nn.Conv2d(input_channels, input_channels, kernel_size=3, padding=1, padding_mode='reflect')
+        self.instancenorm = nn.InstanceNorm2d(input_channels)
+        self.activation = nn.ReLU()
+
+    def forward(self, x):
+        '''
+        Function for completing a forward pass of ResidualBlock: 
+        Given an image tensor, completes a residual block and returns the transformed tensor.
+        Parameters:
+            x: image tensor of shape (batch size, channels, height, width)
+        '''
+        original_x = x.clone()
+        x = self.conv1(x)
+        x = self.instancenorm(x)
+        x = self.activation(x)
+        x = self.conv2(x)
+        x = self.instancenorm(x)
+        return original_x + x
 
 
 class ContractingBlock(nn.Module):
     '''
     ContractingBlock Class
-    Performs two convolutions followed by a max pool operation.
+    Performs a convolution followed by a max pool operation and an optional instance norm.
     Values:
         input_channels: the number of channels to expect from a given input
     '''
-    def __init__(self, input_channels, use_dropout=False, use_bn=True):
+    def __init__(self, input_channels, use_bn=True, kernel_size=3, activation='relu'):
         super(ContractingBlock, self).__init__()
-        self.conv1 = nn.Conv2d(input_channels, input_channels * 2, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(input_channels * 2, input_channels * 2, kernel_size=3, padding=1)
-        self.activation = nn.LeakyReLU(0.2)
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv1 = nn.Conv2d(input_channels, input_channels * 2, kernel_size=kernel_size, padding=1, stride=2, padding_mode='reflect')
+        self.activation = nn.ReLU() if activation == 'relu' else nn.LeakyReLU(0.2)
         if use_bn:
-            self.batchnorm = nn.BatchNorm2d(input_channels * 2)
+            self.instancenorm = nn.InstanceNorm2d(input_channels * 2)
         self.use_bn = use_bn
-        if use_dropout:
-            self.dropout = nn.Dropout()
-        self.use_dropout = use_dropout
 
     def forward(self, x):
         '''
@@ -58,42 +65,27 @@ class ContractingBlock(nn.Module):
         '''
         x = self.conv1(x)
         if self.use_bn:
-            x = self.batchnorm(x)
-        if self.use_dropout:
-            x = self.dropout(x)
+            x = self.instancenorm(x)
         x = self.activation(x)
-        x = self.conv2(x)
-        if self.use_bn:
-            x = self.batchnorm(x)
-        if self.use_dropout:
-            x = self.dropout(x)
-        x = self.activation(x)
-        x = self.maxpool(x)
         return x
 
 class ExpandingBlock(nn.Module):
     '''
     ExpandingBlock Class:
-    Performs an upsampling, a convolution, a concatenation of its two inputs,
-    followed by two more convolutions with optional dropout
+    Performs a convolutional transpose operation in order to upsample, 
+        with an optional instance norm
     Values:
         input_channels: the number of channels to expect from a given input
     '''
-    def __init__(self, input_channels, use_dropout=False, use_bn=True):
+    def __init__(self, input_channels, use_bn=True):
         super(ExpandingBlock, self).__init__()
-        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv1 = nn.Conv2d(input_channels, input_channels // 2, kernel_size=2)
-        self.conv2 = nn.Conv2d(input_channels, input_channels // 2, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(input_channels // 2, input_channels // 2, kernel_size=2, padding=1)
+        self.conv1 = nn.ConvTranspose2d(input_channels, input_channels // 2, kernel_size=3, stride=2, padding=1, output_padding=1)
         if use_bn:
-            self.batchnorm = nn.BatchNorm2d(input_channels // 2)
+            self.instancenorm = nn.InstanceNorm2d(input_channels // 2)
         self.use_bn = use_bn
         self.activation = nn.ReLU()
-        if use_dropout:
-            self.dropout = nn.Dropout()
-        self.use_dropout = use_dropout
 
-    def forward(self, x, skip_con_x):
+    def forward(self, x):
         '''
         Function for completing a forward pass of ExpandingBlock: 
         Given an image tensor, completes an expanding block and returns the transformed tensor.
@@ -102,37 +94,24 @@ class ExpandingBlock(nn.Module):
             skip_con_x: the image tensor from the contracting path (from the opposing block of x)
                     for the skip connection
         '''
-        x = self.upsample(x)
         x = self.conv1(x)
-        skip_con_x = crop(skip_con_x, x.shape)
-        x = torch.cat([x, skip_con_x], axis=1)
-        x = self.conv2(x)
         if self.use_bn:
-            x = self.batchnorm(x)
-        if self.use_dropout:
-            x = self.dropout(x)
-        x = self.activation(x)
-        x = self.conv3(x)
-        if self.use_bn:
-            x = self.batchnorm(x)
-        if self.use_dropout:
-            x = self.dropout(x)
+            x = self.instancenorm(x)
         x = self.activation(x)
         return x
 
 class FeatureMapBlock(nn.Module):
     '''
     FeatureMapBlock Class
-    The final layer of a U-Net - 
-    maps each pixel to a pixel with the correct number of output dimensions
-    using a 1x1 convolution.
+    The final layer of a Generator - 
+    maps each the output to the desired number of output channels
     Values:
         input_channels: the number of channels to expect from a given input
         output_channels: the number of channels to expect for a given output
     '''
     def __init__(self, input_channels, output_channels):
         super(FeatureMapBlock, self).__init__()
-        self.conv = nn.Conv2d(input_channels, output_channels, kernel_size=1)
+        self.conv = nn.Conv2d(input_channels, output_channels, kernel_size=7, padding=3, padding_mode='reflect')
 
     def forward(self, x):
         '''
@@ -144,62 +123,64 @@ class FeatureMapBlock(nn.Module):
         x = self.conv(x)
         return x
 
-class UNet(nn.Module):
+
+
+class Generator(nn.Module):
     '''
-    UNet Class
-    A series of 4 contracting blocks followed by 4 expanding blocks to 
-    transform an input image into the corresponding paired image, with an upfeature
+    Generator Class
+    A series of 2 contracting blocks, 9 residual blocks, and 2 expanding blocks to 
+    transform an input image into an image from the other class, with an upfeature
     layer at the start and a downfeature layer at the end.
     Values:
         input_channels: the number of channels to expect from a given input
         output_channels: the number of channels to expect for a given output
     '''
-    def __init__(self, input_channels, output_channels, hidden_channels=32):
-        super(UNet, self).__init__()
+    def __init__(self, input_channels, output_channels, hidden_channels=64):
+        super(Generator, self).__init__()
         self.upfeature = FeatureMapBlock(input_channels, hidden_channels)
-        self.contract1 = ContractingBlock(hidden_channels, use_dropout=True)
-        self.contract2 = ContractingBlock(hidden_channels * 2, use_dropout=True)
-        self.contract3 = ContractingBlock(hidden_channels * 4, use_dropout=True)
-        self.contract4 = ContractingBlock(hidden_channels * 8)
-        self.contract5 = ContractingBlock(hidden_channels * 16)
-        self.contract6 = ContractingBlock(hidden_channels * 32)
-        self.expand0 = ExpandingBlock(hidden_channels * 64)
-        self.expand1 = ExpandingBlock(hidden_channels * 32)
-        self.expand2 = ExpandingBlock(hidden_channels * 16)
-        self.expand3 = ExpandingBlock(hidden_channels * 8)
-        self.expand4 = ExpandingBlock(hidden_channels * 4)
-        self.expand5 = ExpandingBlock(hidden_channels * 2)
+        self.contract1 = ContractingBlock(hidden_channels)
+        self.contract2 = ContractingBlock(hidden_channels * 2)
+        res_mult = 4
+        self.res0 = ResidualBlock(hidden_channels * res_mult)
+        self.res1 = ResidualBlock(hidden_channels * res_mult)
+        self.res2 = ResidualBlock(hidden_channels * res_mult)
+        self.res3 = ResidualBlock(hidden_channels * res_mult)
+        self.res4 = ResidualBlock(hidden_channels * res_mult)
+        self.res5 = ResidualBlock(hidden_channels * res_mult)
+        self.res6 = ResidualBlock(hidden_channels * res_mult)
+        self.res7 = ResidualBlock(hidden_channels * res_mult)
+        self.res8 = ResidualBlock(hidden_channels * res_mult)
+        self.expand2 = ExpandingBlock(hidden_channels * 4)
+        self.expand3 = ExpandingBlock(hidden_channels * 2)
         self.downfeature = FeatureMapBlock(hidden_channels, output_channels)
-        self.sigmoid = torch.nn.Sigmoid()
+        self.tanh = torch.nn.Tanh()
 
     def forward(self, x):
         '''
-        Function for completing a forward pass of UNet: 
-        Given an image tensor, passes it through U-Net and returns the output.
+        Function for completing a forward pass of Generator: 
+        Given an image tensor, passes it through the U-Net with residual blocks
+        and returns the output.
         Parameters:
             x: image tensor of shape (batch size, channels, height, width)
         '''
         x0 = self.upfeature(x)
         x1 = self.contract1(x0)
         x2 = self.contract2(x1)
-        x3 = self.contract3(x2)
-        x4 = self.contract4(x3)
-        x5 = self.contract5(x4)
-        x6 = self.contract6(x5)
-        x7 = self.expand0(x6, x5)
-        x8 = self.expand1(x7, x4)
-        x9 = self.expand2(x8, x3)
-        x10 = self.expand3(x9, x2)
-        x11 = self.expand4(x10, x1)
-        x12 = self.expand5(x11, x0)
-        xn = self.downfeature(x12)
-        return self.sigmoid(xn)
+        x3 = self.res0(x2)
+        x4 = self.res1(x3)
+        x5 = self.res2(x4)
+        x6 = self.res3(x5)
+        x7 = self.res4(x6)
+        x8 = self.res5(x7)
+        x9 = self.res6(x8)
+        x10 = self.res7(x9)
+        x11 = self.res8(x10)
+        x12 = self.expand2(x11)
+        x13 = self.expand3(x12)
+        xn = self.downfeature(x13)
+        return self.tanh(xn)
 
 
-
-
-# UNQ_C1 (UNIQUE CELL IDENTIFIER, DO NOT EDIT)
-# GRADED CLASS: Discriminator
 class Discriminator(nn.Module):
     '''
     Discriminator Class
@@ -209,25 +190,18 @@ class Discriminator(nn.Module):
         input_channels: the number of image input channels
         hidden_channels: the initial number of discriminator convolutional filters
     '''
-    def __init__(self, input_channels, hidden_channels=8):
+    def __init__(self, input_channels, hidden_channels=64):
         super(Discriminator, self).__init__()
         self.upfeature = FeatureMapBlock(input_channels, hidden_channels)
-        self.contract1 = ContractingBlock(hidden_channels, use_bn=False)
-        self.contract2 = ContractingBlock(hidden_channels * 2)
-        self.contract3 = ContractingBlock(hidden_channels * 4)
-        self.contract4 = ContractingBlock(hidden_channels * 8)
-        #### START CODE HERE ####
-        self.final = nn.Conv2d(hidden_channels * 16, 1, kernel_size=1)
-        #### END CODE HERE ####
+        self.contract1 = ContractingBlock(hidden_channels, use_bn=False, kernel_size=4, activation='lrelu')
+        self.contract2 = ContractingBlock(hidden_channels * 2, kernel_size=4, activation='lrelu')
+        self.contract3 = ContractingBlock(hidden_channels * 4, kernel_size=4, activation='lrelu')
+        self.final = nn.Conv2d(hidden_channels * 8, 1, kernel_size=1)
 
-    def forward(self, x, y):
-        x = torch.cat([x, y], axis=1)
+    def forward(self, x):
         x0 = self.upfeature(x)
         x1 = self.contract1(x0)
         x2 = self.contract2(x1)
         x3 = self.contract3(x2)
-        x4 = self.contract4(x3)
-        xn = self.final(x4)
+        xn = self.final(x3)
         return xn
-
-

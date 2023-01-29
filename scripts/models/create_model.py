@@ -1,6 +1,6 @@
-from .models import UNet, Discriminator
+from .models import Generator, Discriminator
 
 def GetModels(opt):
-    Generator = UNet(opt.input_nc, opt.output_nc)
+    Generator = Generator(opt.input_nc, opt.output_nc)
     discriminator = Discriminator(opt.input_nc +  opt.output_nc)
     return Generator, discriminator
