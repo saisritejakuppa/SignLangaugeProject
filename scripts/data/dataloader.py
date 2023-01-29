@@ -43,7 +43,9 @@ class ImageHeatmapDataset(Dataset):
 
             if channel > 3 or channel == 3:
                 #normalize the heatmap
+                continue
                 heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
+
 
             resized_heatmap.append(cv2.resize(heatmap[channel], (512, 512), interpolation = cv2.INTER_LINEAR))
 

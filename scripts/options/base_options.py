@@ -15,7 +15,7 @@ class BaseOptions():
         self.parser.add_argument('--batch_size', type=int, default=4, help='input batch size')
     
         #input dims
-        self.parser.add_argument('--input_nc', type=int, default=22, help='# of input image channels')
+        self.parser.add_argument('--input_nc', type=int, default=3, help='# of input image channels')
 
         #output dims
         self.parser.add_argument('--output_nc', type=int, default=3, help='# of output image channels')
