@@ -10,11 +10,14 @@ import numpy as np
 from torchvision.transforms.functional import to_pil_image
 
 
-
 def Normalize(map):
     # normalize between -1 to 1
     map = (map - map.min()) / (map.max() - map.min())
     map = map * 2 - 1
+    return map
+
+def denormalize(map):
+    map = (map + 1) / 2
     return map
 
 
@@ -42,24 +45,17 @@ class ImageHeatmapDataset(Dataset):
         image = image[0:720, 280:1000, :]
         heatmap = heatmap[:, 0:720, 280:1000]
 
-
         image = Normalize(image)
-
 
         resized_heatmap = []
         for channel in range(heatmap.shape[0]):
             
             if channel < 3:  #head, body, hands
             #   heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
-
-            #   heatmap = heatmap / 255.0
-
                 heatmap = Normalize(heatmap[channel])
 
             if channel > 3 or channel == 3:
-
                 heatmap[channel] = Normalize(heatmap[channel])
-
                 #normalize the heatmap
                 continue
                 heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
@@ -70,11 +66,6 @@ class ImageHeatmapDataset(Dataset):
 
         resized_heatmap = np.stack(resized_heatmap, axis = 0)
 
-        # max_value = np.max(resized_heatmap)
-        # min_value = np.min(resized_heatmap)
-        # mean_value = np.mean(resized_heatmap)
-        # std = np.std(resized_heatmap)
-        # print(max_value, min_value, mean_value, std)
 
 
         resized_heatmap = (resized_heatmap - resized_heatmap.min()) / (resized_heatmap.max() - resized_heatmap.min())
@@ -84,13 +75,6 @@ class ImageHeatmapDataset(Dataset):
 
 
         resized_heatmap = resized_heatmap.astype(np.float32)
-
-        # max_value = np.max(resized_heatmap)
-        # min_value = np.min(resized_heatmap)
-        # mean_value = np.mean(resized_heatmap)
-        # std = np.std(resized_heatmap)
-        # print(max_value, min_value, mean_value, std)
-
 
         #make a transform to convert to size of 720, 720
         transform = transforms.Compose([
