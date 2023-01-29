@@ -88,12 +88,12 @@ def train(gen, disc, dataloaders, opt):
                 heatmaps = heatmaps.permute(0,2,3,1)
 
                 #log the generated image
-                wandb.log({"Generated Image": [wandb.Image(fake[0].detach().cpu().numpy())]})
+                wandb.log({"Generated Image": [wandb.Image(fake[0].detach().cpu().numpy() * 255)]})
                 #original image
-                wandb.log({"Original Image": [wandb.Image(real[0].detach().cpu().numpy())]})
+                wandb.log({"Original Image": [wandb.Image(real[0].detach().cpu().numpy() * 255 )]})
                 #log the 3 heatmaps greyscale
                 for i in range(opt.input_nc):
-                    wandb.log({f"Generated Heatmap {i}": [wandb.Image(condition[0][i].detach().cpu().numpy())]})
+                    wandb.log({f"Generated Heatmap {i}": [wandb.Image(condition[0][i].detach().cpu().numpy() * 255)]})
                     
                 #save the model
                 if opt.save_model:

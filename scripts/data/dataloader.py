@@ -65,7 +65,11 @@ class ImageHeatmapDataset(Dataset):
         transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((512,512)),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            #normalize
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225])
+
         ])
 
         #convert to a tensor
@@ -81,6 +85,9 @@ class ImageHeatmapDataset(Dataset):
             #rotation
             transforms.RandomRotation(degrees=5),
             transforms.ToTensor(),   
+            #normalize
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225])
 
         ])
         resized_heatmap = torch.stack([transform(heatmap) for heatmap in resized_heatmap])
