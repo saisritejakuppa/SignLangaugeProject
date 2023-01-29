@@ -8,6 +8,9 @@ from torch import nn
 from losses.loss import Loss
 from glob import glob
 
+import wandb
+wandb.init(project="SignGan_Pix2Pix", entity="saiteja")
+
 
 def train(gen, disc, dataloaders, opt):
     mean_generator_loss = 0
@@ -53,6 +56,15 @@ def train(gen, disc, dataloaders, opt):
             #update generator
             gen_opt.zero_grad()
             gen_loss, all_losses  = Loss(opt)(real, condition, gen, disc)
+
+            #log the loss
+            wandb.log({'Generator Loss': gen_loss.item(), 'Discriminator Loss': disc_loss.item()})
+
+            #log all losses
+            for loss_name, val in all_losses.items():
+                wandb.log({loss_name: val})
+
+
             gen_loss.backward()
             gen_opt.step()
 
@@ -67,6 +79,17 @@ def train(gen, disc, dataloaders, opt):
                 mean_generator_loss = 0
                 mean_discriminator_loss = 0
 
+                #log the generated image
+                wandb.log({"Generated Image": [wandb.Image(fake[0].detach().cpu().numpy())]})
+                #original image
+                wandb.log({"Original Image": [wandb.Image(real[0].detach().cpu().numpy())]})
+                #log the 23 heatmaps greyscale
+                for i in range(23):
+                    wandb.log({f"Generated Heatmap {i}": [wandb.Image(condition[0][i].detach().cpu().numpy())]})
+                    
+
+
+
                 #save the model
                 if opt.save_model:
                         torch.save({'gen': gen.state_dict(),
@@ -74,6 +97,8 @@ def train(gen, disc, dataloaders, opt):
                             'disc': disc.state_dict(),
                             'disc_opt': disc_opt.state_dict()
                         }, f"pix2pix_{cur_step}.pth")
+
+
 
             cur_step += 1
             
