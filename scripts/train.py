@@ -9,7 +9,7 @@ from losses.loss import Loss
 from glob import glob
 
 import wandb
-wandb.init(project="SignGan_Pix2Pix", entity="saiteja")
+wandb.init(project="SignGan_Pix2Pix", entity="saisritejak")
 
 
 def train(gen, disc, dataloaders, opt):
@@ -84,12 +84,9 @@ def train(gen, disc, dataloaders, opt):
                 #original image
                 wandb.log({"Original Image": [wandb.Image(real[0].detach().cpu().numpy())]})
                 #log the 23 heatmaps greyscale
-                for i in range(23):
+                for i in range(opt.input_nc):
                     wandb.log({f"Generated Heatmap {i}": [wandb.Image(condition[0][i].detach().cpu().numpy())]})
                     
-
-
-
                 #save the model
                 if opt.save_model:
                         torch.save({'gen': gen.state_dict(),
