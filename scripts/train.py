@@ -16,7 +16,7 @@ def train(gen, disc, dataloaders, opt):
     cur_step = 0
 
     for epoch in range(opt.n_epochs):
-        for heatmaps, images in tqdm(train_dataloader):
+        for images,heatmaps in tqdm(train_dataloader):
             condition = nn.functional.interpolate(heatmaps, size=opt.target_shape)
             real = nn.functional.interpolate(images, size=opt.target_shape)
 
