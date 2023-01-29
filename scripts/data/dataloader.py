@@ -39,7 +39,6 @@ class ImageHeatmapDataset(Dataset):
             
             if channel < 3:  #head, body, shoulder
               heatmap = heatmap / 255.0
-
             resized_heatmap.append(cv2.resize(heatmap[channel], (512, 512), interpolation = cv2.INTER_LINEAR))
         resized_heatmap = np.stack(resized_heatmap, axis = 0)
 
@@ -51,7 +50,11 @@ class ImageHeatmapDataset(Dataset):
 
 
         resized_heatmap = (resized_heatmap - resized_heatmap.min()) / (resized_heatmap.max() - resized_heatmap.min())
-        resized_heatmap = resized_heatmap * 255
+
+        
+        # resized_heatmap = resized_heatmap * 255
+
+
         resized_heatmap = resized_heatmap.astype(np.float32)
 
         # max_value = np.max(resized_heatmap)
@@ -86,8 +89,8 @@ class ImageHeatmapDataset(Dataset):
             transforms.RandomRotation(degrees=5),
             transforms.ToTensor(),   
             #normalize
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                std=[0.229, 0.224, 0.225])
+            # transforms.Normalize(mean=[0.485, 0.456, 0.406],
+            #                     std=[0.229, 0.224, 0.225])
 
         ])
         resized_heatmap = torch.stack([transform(heatmap) for heatmap in resized_heatmap])
