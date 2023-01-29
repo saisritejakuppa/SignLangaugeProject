@@ -51,7 +51,7 @@ class Loss(nn.Module):
                self.lambda_feat * ssim + \
                 self.lambda_GAN * gen_adv_loss 
 
-        all_losses = {'loss': loss,
+        all_losses = {'total loss': loss,
             'gen_adv_loss': gen_adv_loss,
             'gen_rec_loss': gen_rec_loss,
             'pl': pl,

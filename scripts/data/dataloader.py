@@ -39,7 +39,14 @@ class ImageHeatmapDataset(Dataset):
             
             if channel < 3:  #head, body, shoulder
               heatmap = heatmap / 255.0
+
+            if channel > 3:
+                #normalize the heatmap
+                heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
+
             resized_heatmap.append(cv2.resize(heatmap[channel], (512, 512), interpolation = cv2.INTER_LINEAR))
+
+
         resized_heatmap = np.stack(resized_heatmap, axis = 0)
 
         # max_value = np.max(resized_heatmap)
@@ -104,8 +111,8 @@ import os
 
 def showbatch(images, heatmaps):
     #make the dir data if doesnot exist
-    if not os.path.exists('data'):
-        os.mkdir('data')
+    if not os.path.exists('output'):
+        os.mkdir('output')
 
     # print('The shape of the heatmap,' , heatmaps.shape)
 
@@ -121,11 +128,7 @@ def showbatch(images, heatmaps):
     #save the image
     #change the shape from c*w*h to cv2
     images = images.permute(1, 2, 0).numpy() * 255
-
-
     cv2.imwrite('output/finalimage.png', images)
-
-
     for no, heatmap in enumerate(heatmaps):
         #covnert to a numpy array from torch
         heatmap = heatmap.numpy()
