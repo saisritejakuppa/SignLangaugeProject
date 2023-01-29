@@ -11,6 +11,14 @@ from torchvision.transforms.functional import to_pil_image
 
 
 
+def Normalize(map):
+    # normalize between -1 to 1
+    map = (map - map.min()) / (map.max() - map.min())
+    map = map * 2 - 1
+    return map
+
+
+
 class ImageHeatmapDataset(Dataset):
     def __init__(self, image_paths, heatmap_paths):
         self.image_paths = image_paths
@@ -34,14 +42,24 @@ class ImageHeatmapDataset(Dataset):
         image = image[0:720, 280:1000, :]
         heatmap = heatmap[:, 0:720, 280:1000]
 
+
+        image = Normalize(image)
+
+
         resized_heatmap = []
         for channel in range(heatmap.shape[0]):
             
             if channel < 3:  #head, body, hands
-              heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
+            #   heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
+
             #   heatmap = heatmap / 255.0
 
+                heatmap = Normalize(heatmap[channel])
+
             if channel > 3 or channel == 3:
+
+                heatmap[channel] = Normalize(heatmap[channel])
+
                 #normalize the heatmap
                 continue
                 heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
@@ -79,10 +97,7 @@ class ImageHeatmapDataset(Dataset):
             transforms.ToPILImage(),
             transforms.Resize((512,512)),
             transforms.ToTensor(),
-            #normalize
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                std=[0.229, 0.224, 0.225])
-
+            #normalize between -1 tp 1
         ])
 
         #convert to a tensor
