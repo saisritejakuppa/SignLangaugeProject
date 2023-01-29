@@ -104,6 +104,10 @@ class VGGLoss(nn.Module):
         return G
 
     def __call__(self, x, y):
+        
+        #convert vgg to cuda
+        self.vgg.cuda()
+
         # Compute features
         x_vgg, y_vgg = self.vgg(x), self.vgg(y)
 
