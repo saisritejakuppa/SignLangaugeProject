@@ -52,8 +52,8 @@ class ImageHeatmapDataset(Dataset):
         #make a transform to convert to size of 720, 720
         #add translation to minimum and rotation and gaussian noise and scaling
         transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize((512,512)),
+            # transforms.ToPILImage(),
+            # transforms.Resize((512,512)),
             transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
 
             #add gaussian noise
