@@ -38,6 +38,7 @@ class ImageHeatmapDataset(Dataset):
         for channel in range(heatmap.shape[0]):
             resized_heatmap.append(cv2.resize(heatmap[channel], (512, 512), interpolation = cv2.INTER_LINEAR))
         resized_heatmap = np.stack(resized_heatmap, axis = 0)
+        resized_heatmap = Image.fromarray(resized_heatmap)
 
         #make a transform to convert to size of 720, 720
         transform = transforms.Compose([
