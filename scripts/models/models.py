@@ -198,7 +198,8 @@ class Discriminator(nn.Module):
         self.contract3 = ContractingBlock(hidden_channels * 4, kernel_size=4, activation='lrelu')
         self.final = nn.Conv2d(hidden_channels * 8, 1, kernel_size=1)
 
-    def forward(self, x):
+    def forward(self, x, y):
+        x = torch.cat([x, y], axis=1)        
         x0 = self.upfeature(x)
         x1 = self.contract1(x0)
         x2 = self.contract2(x1)
