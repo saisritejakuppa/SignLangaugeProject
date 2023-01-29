@@ -40,7 +40,7 @@ class ImageHeatmapDataset(Dataset):
             if channel < 3:  #head, body, shoulder
               heatmap = heatmap / 255.0
 
-            if channel > 3:
+            if channel > 3 or channel == 3:
                 #normalize the heatmap
                 heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
 
