@@ -92,7 +92,7 @@ def train(gen, disc, dataloaders, opt):
                 #original image
                 wandb.log({"Original Image": [wandb.Image(real[0].detach().cpu().numpy())]})
                 #log the 3 heatmaps greyscale
-                for i in range(3):
+                for i in range(opt.input_nc):
                     wandb.log({f"Generated Heatmap {i}": [wandb.Image(condition[0][i].detach().cpu().numpy())]})
                     
                 #save the model
