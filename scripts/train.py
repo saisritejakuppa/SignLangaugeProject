@@ -79,6 +79,11 @@ def train(gen, disc, dataloaders, opt):
                 mean_generator_loss = 0
                 mean_discriminator_loss = 0
 
+                #change the image to 3,256,256 to 256*256*3
+                fake = fake.permute(0,2,3,1)
+                real = real.permute(0,2,3,1)
+                heatmaps = heatmaps.permute(0,2,3,1)
+
                 #log the generated image
                 wandb.log({"Generated Image": [wandb.Image(fake[0].detach().cpu().numpy())]})
                 #original image
