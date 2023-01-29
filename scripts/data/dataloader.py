@@ -84,6 +84,9 @@ class ImageHeatmapDataset(Dataset):
 
         ])
         resized_heatmap = torch.stack([transform(heatmap) for heatmap in resized_heatmap])
+        resized_heatmap = torch.as_tensor(resized_heatmap)
+        resized_heatmap = resized_heatmap.reshape(22, 512, 512)
+
 
         return image, resized_heatmap
     
