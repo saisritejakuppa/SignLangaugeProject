@@ -60,7 +60,7 @@ class ImageHeatmapDataset(Dataset):
             transforms.RandomApply([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)], p=0.5),
             
             #rotation
-            transforms.RandomRotation(degrees=5, resample=False, expand=False, center=None, fill=None),
+            transforms.RandomRotation(degrees=5),
 
             transforms.ToTensor(),            
         ])
