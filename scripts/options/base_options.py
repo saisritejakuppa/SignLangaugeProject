@@ -41,19 +41,15 @@ class BaseOptions():
         #print_every
         self.parser.add_argument('--print_every', type=int, default=2, help='print every n steps')
 
-
         #losses and lambdas
-        self.parser.add_argument('--lambda_L1', type=float, default=100.0, help='weight for L1 loss')
-        self.parser.add_argument('--lambda_GAN', type=float, default=1.0, help='weight for GAN loss')
-        self.parser.add_argument('--lambda_feat', type=float, default=10.0, help='weight for feature matching loss')
-        self.parser.add_argument('--lambda_vgg', type=float, default=10.0, help='weight for vgg loss')
+        self.parser.add_argument('--lambda_L1', type=float, default=10.0, help='weight for L1 loss')
+        self.parser.add_argument('--lambda_GAN', type=float, default=10.0, help='weight for GAN loss')
+        self.parser.add_argument('--lambda_feat', type=float, default=2.0, help='weight for feature matching loss')
+        self.parser.add_argument('--lambda_vgg', type=float, default=2.0, help='weight for vgg loss')
         self.parser.add_argument('--ssim', type=float, default=0.0, help='weight for ssim loss')
 
         #checkpoints path
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
-
-
-
 
     def parse(self):
         if not self.initialized:
