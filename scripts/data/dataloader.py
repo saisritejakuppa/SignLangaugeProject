@@ -36,9 +36,30 @@ class ImageHeatmapDataset(Dataset):
 
         resized_heatmap = []
         for channel in range(heatmap.shape[0]):
+            
+            if channel < 3:  #head, body, shoulder
+              heatmap = heatmap / 255.0
+
             resized_heatmap.append(cv2.resize(heatmap[channel], (512, 512), interpolation = cv2.INTER_LINEAR))
         resized_heatmap = np.stack(resized_heatmap, axis = 0)
-        resized_heatmap = Image.fromarray(resized_heatmap)
+
+        # max_value = np.max(resized_heatmap)
+        # min_value = np.min(resized_heatmap)
+        # mean_value = np.mean(resized_heatmap)
+        # std = np.std(resized_heatmap)
+        # print(max_value, min_value, mean_value, std)
+
+
+        resized_heatmap = (resized_heatmap - resized_heatmap.min()) / (resized_heatmap.max() - resized_heatmap.min())
+        resized_heatmap = resized_heatmap * 255
+        resized_heatmap = resized_heatmap.astype(np.float32)
+
+        # max_value = np.max(resized_heatmap)
+        # min_value = np.min(resized_heatmap)
+        # mean_value = np.mean(resized_heatmap)
+        # std = np.std(resized_heatmap)
+        # print(max_value, min_value, mean_value, std)
+
 
         #make a transform to convert to size of 720, 720
         transform = transforms.Compose([
@@ -53,22 +74,16 @@ class ImageHeatmapDataset(Dataset):
         #make a transform to convert to size of 720, 720
         #add translation to minimum and rotation and gaussian noise and scaling
         transform = transforms.Compose([
-            # transforms.ToPILImage(),
-            # transforms.Resize((512,512)),
+            transforms.ToPILImage(),
             transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-
             #add gaussian noise
-            transforms.RandomApply([transforms.GaussianBlur(3, sigma=(0.1, 2.0))], p=0.5),
-            transforms.RandomApply([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)], p=0.5),
-            
+            # transforms.RandomApply([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)], p=0.5),
             #rotation
             transforms.RandomRotation(degrees=5),
+            transforms.ToTensor(),   
 
-            transforms.ToTensor(),            
         ])
-
-        #convert to a tensor
-        heatmap = transform(heatmap)
+        resized_heatmap = torch.stack([transform(heatmap) for heatmap in resized_heatmap])
 
         return image, resized_heatmap
     
