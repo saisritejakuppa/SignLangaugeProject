@@ -20,6 +20,9 @@ def train(gen, disc, dataloaders, opt):
             condition = nn.functional.interpolate(heatmaps, size=opt.target_shape)
             real = nn.functional.interpolate(images, size=opt.target_shape)
 
+            condition = torch.utils.data.TensorDataset(condition)
+            real = torch.utils.data.TensorDataset(real)
+
             cur_batch_size = len(condition)
 
             #to cuda
