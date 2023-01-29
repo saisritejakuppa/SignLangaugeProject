@@ -42,7 +42,7 @@ class ImageHeatmapDataset(Dataset):
         #make a transform to convert to size of 720, 720
         transform = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.Resize((373,373)),
+            transforms.Resize((512,512)),
             transforms.ToTensor()
         ])
 
@@ -50,8 +50,19 @@ class ImageHeatmapDataset(Dataset):
         image = transform(image)
 
         #make a transform to convert to size of 720, 720
+        #add translation to minimum and rotation and gaussian noise and scaling
         transform = transforms.Compose([
-            transforms.ToTensor()
+            transforms.Resize((512,512)),
+            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+
+            #add gaussian noise
+            transforms.RandomApply([transforms.GaussianBlur(3, sigma=(0.1, 2.0))], p=0.5),
+            transforms.RandomApply([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)], p=0.5),
+            
+            #rotation
+            transforms.RandomRotation(degrees=5, resample=False, expand=False, center=None, fill=None),
+
+            transforms.ToTensor(),            
         ])
 
         #convert to a tensor
