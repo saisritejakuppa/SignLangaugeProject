@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+#import models from torchvision
+from torchvision import models
+
 
 # gram matrix and loss
 class GramMatrix(nn.Module):
