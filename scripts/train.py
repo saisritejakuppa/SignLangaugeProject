@@ -20,8 +20,12 @@ def train(gen, disc, dataloaders, opt):
             condition = nn.functional.interpolate(heatmaps, size=opt.target_shape)
             real = nn.functional.interpolate(images, size=opt.target_shape)
 
-            condition = torch.utils.data.TensorDataset(condition)
-            real = torch.utils.data.TensorDataset(real)
+            # condition = torch.utils.data.TensorDataset(condition)
+            # real = torch.utils.data.TensorDataset(real)
+
+            #convert to float32
+            condition = condition.type(torch.float32)
+            real = real.type(torch.float32)
 
             cur_batch_size = len(condition)
 
