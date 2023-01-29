@@ -32,6 +32,8 @@ def train(gen, disc, dataloaders, opt):
             #to cuda
             condition = condition.to(opt.device)
             real = real.to(opt.device)
+            gen = gen.to(opt.device)
+            disc = disc.to(opt.device)
 
             #update discriminator
             disc_opt.zero_grad()
