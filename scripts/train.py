@@ -71,6 +71,9 @@ def train(gen, disc, dataloaders, opt):
             mean_generator_loss += gen_loss.item() / opt.print_every
             mean_discriminator_loss += disc_loss.item() / opt.print_every
 
+            #log the means
+            wandb.log({'Mean Generator Loss': mean_generator_loss, 'Mean Discriminator Loss': mean_discriminator_loss})
+
             if cur_step % opt.print_every == 0:
                 if cur_step > 0:
                     print(f"Step {cur_step}: Generator loss: {mean_generator_loss}, discriminator loss: {mean_discriminator_loss}")
