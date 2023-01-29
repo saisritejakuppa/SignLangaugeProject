@@ -29,7 +29,6 @@ class Loss(nn.Module):
         self.lambda_GAN = opt.lambda_GAN
         self.lambda_feat = opt.lambda_feat
         self.lambda_vgg = opt.lambda_vgg
-        self.ssim = opt.ssim
 
     def forward(self, real, condition, gen, disc):
 
@@ -50,7 +49,7 @@ class Loss(nn.Module):
         loss = self.lambda_L1 * gen_rec_loss +   \
                self.lambda_vgg * pl +  \
                self.lambda_feat * ssim + \
-                self.lambda_GAN * gen_adv_loss
+                self.lambda_GAN * gen_adv_loss 
 
         all_losses = {'loss': loss,
             'gen_adv_loss': gen_adv_loss,
