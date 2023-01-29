@@ -37,8 +37,9 @@ class ImageHeatmapDataset(Dataset):
         resized_heatmap = []
         for channel in range(heatmap.shape[0]):
             
-            if channel < 3:  #head, body, shoulder
-              heatmap = heatmap / 255.0
+            if channel < 3:  #head, body, hands
+              heatmap[channel] = (heatmap[channel] - heatmap[channel].min()) / (heatmap[channel].max() - heatmap[channel].min())
+            #   heatmap = heatmap / 255.0
 
             if channel > 3 or channel == 3:
                 #normalize the heatmap
@@ -89,7 +90,7 @@ class ImageHeatmapDataset(Dataset):
         #add translation to minimum and rotation and gaussian noise and scaling
         transform = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.RandomAffine(degrees=0, translate=(0.01, 0.01), scale=(0.02, 0.1)),
+            transforms.RandomAffine(degrees=0, translate=(0.01, 0.01)),
             #add gaussian noise
             # transforms.RandomApply([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)], p=0.5),
             #rotation
