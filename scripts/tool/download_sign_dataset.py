@@ -90,7 +90,7 @@ def DownloadDataset(dataframe, donwloaddir = '../outputs/dataset_preparation/raw
         #remove the pose_savepath
         os.remove(pose_savepath)
 
-        break
+        # break
 
     # print(unq_filenames[0])
 
@@ -204,7 +204,7 @@ def GenerateDatasetFromVid(specific_vid_dataframe, donwloaddir):
         with open(savepath, 'wb') as f:
             pickle.dump(pose_info, f)
 
-        break
+        # break
 
 
 
@@ -219,11 +219,15 @@ def GenerateFrameDataset(dataframe, donwloaddir = '../outputs/dataset_preparatio
 
 
 
-train_path = '../meineDGS-Translation-Protocols/mDGS/mDGS_Protocol_Train.csv'
-data = GetDataFromCSV(train_path)
 
-# DownloadDataset(data)
-# GenerateFrameDataset(data)
-# print(data.head())
+
+if __name__ == "__main__":
+
+    train_path = '../meineDGS-Translation-Protocols/mDGS/mDGS_Protocol_Train.csv'
+    data = GetDataFromCSV(train_path)
+
+    # DownloadDataset(data)
+    # GenerateFrameDataset(data)
+    # print(data.head())
 
 
