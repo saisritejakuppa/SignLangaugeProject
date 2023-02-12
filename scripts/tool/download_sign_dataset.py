@@ -226,8 +226,8 @@ if __name__ == "__main__":
     train_path = '../meineDGS-Translation-Protocols/mDGS/mDGS_Protocol_Train.csv'
     data = GetDataFromCSV(train_path)
 
-    # DownloadDataset(data)
-    # GenerateFrameDataset(data)
+    DownloadDataset(data, '../outputs/dataset_preparation/raw_vids_dataset')
+    GenerateFrameDataset(data, '../outputs/dataset_preparation/raw_vids_dataset')
     # print(data.head())
 
 
