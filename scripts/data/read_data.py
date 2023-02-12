@@ -329,7 +329,7 @@ def GenerateHeatMaps(pkl_path, savedir):
 
 
 
-
-pkl_path = '/home/saiteja/Desktop/untitled folder/SignLangaugeProject/outputs/dataset_preparation/raw_vids_dataset/1176340/1176340A-0/1176340A-0.pkl'
-save_path = os.path.dirname(pkl_path)
-GenerateHeatMaps(pkl_path,save_path)
+if __name__ == '__main__':
+    pkl_path = '/home/saiteja/Desktop/untitled folder/SignLangaugeProject/outputs/dataset_preparation/raw_vids_dataset/1176340/1176340A-0/1176340A-0.pkl'
+    save_path = os.path.dirname(pkl_path)
+    GenerateHeatMaps(pkl_path,save_path)
